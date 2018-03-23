@@ -42,10 +42,6 @@ def generator(num_queries, domain_file):
 
 
 
-
-
-
-
 if __name__ == '__main__':
     
     
