@@ -1,4 +1,4 @@
-import click 
+import click
 
 @click.group()
 def cli():
@@ -6,11 +6,14 @@ def cli():
 
 @click.command()
 @click.option('--file', help='Settings file')
-@click.option('--host', help='Host to send generated log messages to')
-def dns(file,host):
+@click.option('--host', help='Host to send generated log messages to', default='localhost')
+@click.option('--port', help='Host port to connect - default is 5514', default=5514)
+def dns(file,host,port):
     click.echo("In DNS")
-    click.echo(f"File is {file}")
+    if file:
+        click.echo(f"File is {file}")
     click.echo(f"Host is {host}")
+    click.echo(f"Port is {port}")
 
 @click.command()
 def iot():
