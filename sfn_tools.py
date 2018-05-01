@@ -12,6 +12,8 @@ def dns(file,host,port):
     click.echo("In DNS")
     if file:
         click.echo(f"File is {file}")
+        host="Tester"
+        port=1024        
     click.echo(f"Host is {host}")
     click.echo(f"Port is {port}")
 
