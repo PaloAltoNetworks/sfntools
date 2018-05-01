@@ -7,15 +7,21 @@ import logging.handlers
 
 
 def sendLog(logObject):
+    '''
+    Send log to syslog server based on information in logObject
+    @param dict logObject   Dictionary of info for sending the message
+    '''
     syslogger = logging.getLogger('SyslogLogger')
     syslogger.setLevel(string2Level(logObject['level']))
     handler = logging.handlers.SysLogHandler(address=(logObject['host'], logObject['port']),
                                              facility=1)
     syslogger.addHandler(handler)
-    #syslogger.log(logObject['message'])
+    syslogger.log(logObject['message'])
     print(f"Host is {logObject['host']}")
     print(f"Port is {logObject['port']}")
     print(f"MSG is {logObject['message']}")
+
+    
 def string2Level(log_level):
     """ 
     Convert a commandline string to a proper log level
