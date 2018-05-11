@@ -16,7 +16,7 @@ def sendLog(logObject):
     handler = logging.handlers.SysLogHandler(address=(logObject['host'], logObject['port']),
                                              facility=1)
     syslogger.addHandler(handler)
-    syslogger.log(logObject['message'])
+    syslogger.log(msg=logObject['message'],level=string2Level(logObject['level']))
     print(f"Host is {logObject['host']}")
     print(f"Port is {logObject['port']}")
     print(f"MSG is {logObject['message']}")
