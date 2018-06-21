@@ -47,7 +47,7 @@ def dns(config,host,port):
         #line = randomLine(open(f"{fileName}"))
         #print(msg)
     
-        sendLog('test.sfn',5517,msg)
+        sendLog('localhost',5514,msg)
         count += 1
         
     print(f"Started at {start}")
