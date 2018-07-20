@@ -1,5 +1,7 @@
+import time
+import random
 from socket import socket
-
+from datetime import datetime, timedelta
 
 def sendLog(host, port, msg):
     message = msg.encode('utf-8')
@@ -8,9 +10,6 @@ def sendLog(host, port, msg):
     sock.sendall(message)
     sock.close()
 
-import random
-import time
- 
 
 def randomLine(afile):
     line = next(afile)
@@ -20,6 +19,11 @@ def randomLine(afile):
     return line
 
 
+def calcDate(direction,ndays):
+    if direction == "past":
+        return f"{datetime.now() - timedelta(days=ndays):%Y/%m/%d %H:%M:%S}"
+    else:
+        return f"{datetime.now() + timedelta(days=ndays):%Y/%m/%d %H:%M:%S}"
 
 def strTimeProp(start, end, format, prop):
     """Get a time at a proportion of a range of two formatted times.

@@ -1,6 +1,9 @@
+import time
 import click
 import random
-import time
+
+from datetime import datetime, timedelta
+
 from lib.utils import *
 from DNS.dns import *
 
@@ -12,11 +15,15 @@ def cli():
 @click.option('--config', help='Settings file')
 @click.option('--host', help='Host to send generated log messages to', default='localhost')
 @click.option('--port', help='Host port to connect - default is 5514', default=5514)
-def dns(config,host,port,totNumEvents,daysPast,daysFuture):
+@click.option('--days_past', help='Number of days in past to generate events', default=30)
+@click.option('--days_future', help='Number of days in the future to generate events', default=10)
+@click.option('--tne',  help='Total number of events to generate', default=1000000)
+
+def dns(config,host,port,tne,days_past,days_future):
     # Set up default values for variables
-    totNumEvents = 1000000
-    daysPast = 30
-    daysFuture = 30
+    # totNumEvents = 1000000
+    # daysPast = 30
+    # daysFuture = 30
     
 
     click.echo("In DNS")
@@ -33,17 +40,12 @@ def dns(config,host,port,totNumEvents,daysPast,daysFuture):
     flag = True
     count = 0
     start = time.time()
-    while count < totNumEvents:
+    while count < tne:
         numEvents = random.randint(1,25)
         sleepTime = random.randint(1,3)
         for event in range(numEvents):
-            startDate = f"{datetime.datetime.now()- timedelta(days=daysPast):%Y/%m/%d %H:%M:%S}"
-            endDate = f"{datetime.datetime.now()- timedelta(days=daysFuture):%Y/%m/%d %H:%M:%S}"
-            print(f"Start Date is {startDate} and End Date is {endDate}")
-            exit()
-            
-            startDate = "2018/7/15 01:30:00"
-            endDate = "2018/7/30 01:30:00"
+            startDate = calcDate("past",days_past)
+            endDate = calcDate("future",days_future)
             genDate = randomDate(startDate,endDate,random.random())
             srcIP = randomLine(open("lib/srcIPs.txt"))
             srcIP = srcIP.strip()
