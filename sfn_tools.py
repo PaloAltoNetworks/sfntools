@@ -12,32 +12,23 @@ def cli():
     pass
 
 @click.command()
-@click.option('--config', help='Settings file')
+@click.option('--config', help='Settings file', default='~/.panrc')
 @click.option('--host', help='Host to send generated log messages to', default='localhost')
 @click.option('--port', help='Host port to connect - default is 5514', default=5514)
 @click.option('--days_past', help='Number of days in past to generate events', default=30)
 @click.option('--days_future', help='Number of days in the future to generate events', default=10)
 @click.option('--tne',  help='Total number of events to generate', default=1000000)
+@click.option('--pack', help='Content pack name', default='AppThreat-2606-3102')
 
-def dns(config,host,port,tne,days_past,days_future):
-    # Set up default values for variables
-    # totNumEvents = 1000000
-    # daysPast = 30
-    # daysFuture = 30
-    
-
-    click.echo("In DNS")
+def dns(config,host,port,tne,days_past,days_future,pack):
     if config:
         click.echo(f"File is {config}")
-        host="Tester"
-        port=1024
-    else:
-        config="DNS/dns.config"
+    
+    click.echo("In DNS")
     click.echo(f"Config is {config}")        
     click.echo(f"Host is {host}")
     click.echo(f"Port is {port}")
 
-    flag = True
     count = 0
     start = time.time()
     while count < tne:
@@ -47,16 +38,19 @@ def dns(config,host,port,tne,days_past,days_future):
             startDate = calcDate("past",days_past)
             endDate = calcDate("future",days_future)
             genDate = randomDate(startDate,endDate,random.random())
-            srcIP = randomLine(open("lib/srcIPs.txt"))
-            srcIP = srcIP.strip()
+            srcLine = randomLine(open("lib/customerWireless06.csv")).rstrip("\n").split(",")
+            srcIP = srcLine[-1]
+            IMSI = srcLine[-2]
+            IMEI = srcLine[-3]
+            print(f"source IP is {srcIP}\nIMSI is {IMSI}\nIMEI is {IMEI}")
             dstIP = randomLine(open("lib/dnsServers.txt"))
             dstIP = dstIP.strip()
             threatID = randomLine(open("lib/sigs_list.txt"))
             threatID = threatID.strip()
-            #threatID = "Suspicious DNS Query (Backdoor.bifrose:ggdstrojan.ddns.net)(3800001)"
             severity = "medium"
-            msg = f'1,{genDate},015351000011583,THREAT,dns,2049,{genDate},{srcIP},{dstIP},192.168.55.20,{dstIP},SFN-Logging,,,dns,vsys1,trust,untrust,ethernet1/2,ethernet1/1,SFN-Log-Fowarding,{genDate},18680,1,54848,53,7771,53,0x402000,udp,sinkhole,"",{threatID},any,medium,client-to-server,50115,0x2000000000000000,192.168.0.0-192.168.255.255,United States,0,,0,,,0,,,,,,,,0,12,0,0,0,,FW-{sleepTime},,,,,0,,0,,N/A,dns,AppThreat-2606-3102,0x0,0,4294967295'
-
+            msg = f'1,{genDate},015351000011583,THREAT,dns,2049,{genDate},{srcIP},{dstIP},192.168.55.20,{dstIP},SFN-Logging,,,dns,vsys1,trust,untrust,ethernet1/2,ethernet1/1,SFN-Log-Fowarding,{genDate},18680,1,54848,53,7771,53,0x402000,udp,sinkhole,"",{threatID},any,medium,client-to-server,50115,0x2000000000000000,192.168.0.0-192.168.255.255,United States,0,,0,,,0,,,,,,,,0,12,0,0,0,,FW-{sleepTime},,,,,{IMSI},{IMEI},0,,N/A,dns,{pack},0x0,0,4294967295'
+            #print(f"{msg}")
+            #exit()
             sendLog(f"{host}",port,msg)
 
             #time.sleep(sleepTime)
