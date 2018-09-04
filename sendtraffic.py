@@ -1,5 +1,5 @@
 from lib.utils import *
 
-with open("lib/log.csv") as f:
+with open("lib/logtraffic.csv") as f:
     for line in f:
-        sendLog('test.sfn',5514,line)
+        sendLog('23.100.59.161',5514,line)
