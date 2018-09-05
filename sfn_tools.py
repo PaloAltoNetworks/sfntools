@@ -77,8 +77,8 @@ def url():
 @click.option('--config', help='Settings file', default='~/.panrc')
 @click.option('--host', help='Host to send generated log messages to', default='localhost')
 @click.option('--port', help='Host port to connect - default is 5514', default=5514)
-@click.option('--log_replay', help='Log to replay into SFN', default='lib/logtraffic.csv')
-def replay(config,log_replay, host, port):
+@click.option('--log', help='Log to replay into SFN', default='lib/logtraffic.csv')
+def replay(config,log,host,port):
     '''
     Quick option to replay a log download from an pan-os based system.  Using 
     defaults it will replay the log, line by line, to localhost @ port 5514 
@@ -89,7 +89,7 @@ def replay(config,log_replay, host, port):
     if config:
         click.echo(f"File is {config}")
 
-    with open(log_replay) as f:
+    with open(log) as f:
         for line in f:
             sendLog(host,port,line)
 

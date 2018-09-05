@@ -1,6 +1,7 @@
 # Python3 code to demonstrate
 # the random generation of string id's
 import csv
+import json
 import random
 import string
  
@@ -25,7 +26,9 @@ def genIMSI(mccList):
     msin = ran_gen(10,'0123456789')
     return f"{mcc}{mnc}{msin}"
 
-outFile = open('customerWireless.csv', 'w',newline='')
+nl = '\n'
+writeData = {}
+outFile = open('customerWireless.json', 'w')
 with outFile:
     with open('userDB.csv', newline='') as inFile:  
         reader = csv.DictReader(inFile)
@@ -34,7 +37,9 @@ with outFile:
             IMEI = genIMEI()
             IMSI = genIMSI([289,589,659,777,888,999])
             postalCode = random.choice(["99901","99902","99903","99904"])
-            writeData = f"{row['Name']},{row['Address']},Zukville,PN,{postalCode},{row['Phone']},{row['Email']},{acctNum},{IMEI},{IMSI}"
-            print(f"{writeData}")
-            outFile.write(f"{writeData}\n")
+            writeData = f'''{{"index": {{"_index": "customer","_type":"customer"}}}}
+            {{"name":"{row['Name']}","address":"{row['Address']}","city":"Zukville","country":"PN","postal_code":"{postalCode}","phone":"{row['Phone']}","mail":"{row['Email']}","imei":"{IMEI}","imsi":"{IMSI}"}}'''
+            
+            print(f"{{{writeData}}}")
+            json.dump(writeData, outFile)
 
