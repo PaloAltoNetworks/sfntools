@@ -7,23 +7,29 @@ from datetime import datetime, timedelta
 from lib.utils import *
 from DNS.dns import *
 
+nl='\n'
+
 @click.group()
 def cli():
     pass
 
 @click.command()
-@click.option('--config', help='Settings file', default='~/.panrc')
-@click.option('--host', help='Host to send generated log messages to', default='localhost')
-@click.option('--port', help='Host port to connect - default is 5514', default=5514)
-@click.option('--days_past', help='Number of days in past to generate events', default=9)
-@click.option('--days_future', help='Number of days in the future to generate events', default=100)
-@click.option('--tne',  help='Total number of events to generate', default=1000000)
-@click.option('--pack', help='Content pack name', default='AppThreat-scriptGen')
+@click.option('--config', help='Settings file <~./panrc>', default='~/.panrc')
+@click.option('--host', help='Host to send generated log messages to <localhost>', default='localhost')
+@click.option('--port', help='Host port to connect <5514>', default=5514)
+@click.option('--days_past', help='Number of days in past to generate events <90>', default=90)
+@click.option('--days_future', help='Number of days in the future to generate events <30>', default=30)
+@click.option('--tne',  help='Total number of events to generate <1 million>', default=1000000)
+@click.option('--pack', help='Content pack name <AppThreat-scriptGen>', default='AppThreat-scriptGen')
 
 
 def dns(config,host,port,tne,days_past,days_future,pack):
+    '''
+    Generate fake DNS threat traffic.\n
+    Option defaults are in brackets <...>
+    '''
     if config:
-        click.echo(f"File is {config}")
+        click.echo(f"Config file is {config}")
     
     click.echo("In DNS")  
     click.echo(f"Host is {host}")
@@ -68,35 +74,46 @@ def dns(config,host,port,tne,days_past,days_future,pack):
                        
 @click.command()
 def iot():
+    '''
+    NOT USED
+    '''
     click.echo("In IoT")
 
 @click.command()
 def url():
+    '''
+    NOT USED
+    '''
     click.echo("In URL")
 
 @click.command()
-@click.option('--config', help='Settings file', default='~/.panrc')
-@click.option('--host', help='Host to send generated log messages to', default='localhost')
-@click.option('--port', help='Host port to connect - default is 5514', default=5514)
-@click.option('--log', help='Log to replay into SFN', default='lib/logtraffic.csv')
-def replay(config,log,host,port):
+@click.option('--config', help='Settings file - <~./panrc>', default='~/.panrc')
+@click.option('--host', help='Host to send generated log messages to - <localhost>', default='localhost')
+@click.option('--port', help='Host port to connect - <5514>', default=5514)
+@click.option('--log', help='Log to replay into SFN - <lib/logtraffic.csv>', default='lib/logtraffic.csv')
+@click.option('--sec', help='Number of seconds to sleep between sending loglines - <1>',default=1)
+def replay(config,log,host,port,sec):
     '''
-    Quick option to replay a log download from an pan-os based system.  Using 
-    defaults it will replay the log, line by line, to localhost @ port 5514 
-    which logstash should be listening to. 
-
-    :returns: nothing
+    
+    Replay log from NGFW to log receiver.\n 
+    Option defaults are in brackets <...>
     '''
     if config:
-        click.echo(f"File is {config}")
+        click.echo(f"Config file is {config}")
 
-    with open(log) as f:
-        for line in f:
-            sendLog(host,port,line.rstrip())
-            time.sleep(1)
+    try:
+        with open(log) as f:
+            for line in f:
+                sendLog(host,port,line.rstrip())
+                time.sleep(sec)
+    except EnvironmentError as e:
+        print(f'Received error when trying to open logfile {log}:{nl}{e}{nl}')
+
 
 cli.add_command(dns)
 cli.add_command(iot)
 cli.add_command(url)
 cli.add_command(replay)
 
+if __name__=='__main__':
+    cli()
