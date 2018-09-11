@@ -8,8 +8,6 @@ from datetime import datetime, timedelta
 from lib.utils import *
 from DNS.dns import *
 
-nl='\n'
-
 @click.group()
 def cli():
     pass
@@ -22,8 +20,6 @@ def cli():
 @click.option('--days_future', help='Number of days in the future to generate events <30>', default=30)
 @click.option('--tne',  help='Total number of events to generate <1 million>', default=1000000)
 @click.option('--pack', help='Content pack name <AppThreat-scriptGen>', default='AppThreat-scriptGen')
-
-
 def dns(config,host,port,tne,days_past,days_future,pack):
     '''
     Generate fake DNS threat traffic.\n
@@ -72,13 +68,15 @@ def dns(config,host,port,tne,days_past,days_future,pack):
         # print(f"Started at {start}")
         # print(f"Ended at {time.time()}")
         # print(f"Time to send {count} events: {str(time.time() - start)} seconds")
-                       
+
+
 @click.command()
 def iot():
     '''
     NOT USED
     '''
     click.echo("In IoT")
+
 
 @click.command()
 def url():
@@ -115,6 +113,8 @@ cli.add_command(dns)
 cli.add_command(iot)
 cli.add_command(url)
 cli.add_command(replay)
+nl='\n'
+
 
 if __name__=='__main__':
     cli()
