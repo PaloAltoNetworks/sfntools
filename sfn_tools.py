@@ -57,6 +57,7 @@ def dns(config,host,port,tne,days_past,days_future,pack):
             msg = f'1,{genDate},015351000011583,THREAT,dns,2049,{genDate},{srcIP},{dstIP},192.168.55.20,{dstIP},SFN-Logging,,,dns,vsys1,trust,untrust,ethernet1/2,ethernet1/1,SFN-Log-Fowarding,{genDate},18680,1,54848,53,7771,53,0x402000,udp,sinkhole,"",{threatID},any,medium,client-to-server,50115,0x2000000000000000,192.168.0.0-192.168.255.255,United States,0,,0,,,0,,,,,,,,0,12,0,0,0,,FW-{sleepTime},,,,,{IMSI},{IMEI},0,,N/A,dns,{pack},0x0,0,4294967295'
             # We now have the log message built - send it.
             sendLog(f"{host}",port,msg)
+            
 
         count += numEvents
 
@@ -91,7 +92,8 @@ def replay(config,log,host,port):
 
     with open(log) as f:
         for line in f:
-            sendLog(host,port,line)
+            sendLog(host,port,line.rstrip())
+            time.sleep(1)
 
 cli.add_command(dns)
 cli.add_command(iot)
