@@ -61,12 +61,12 @@ instance/
 
 # Scrapy stuff:
 .scrapy
-
-# Sphinx documentation
-docs/_build/
-
-# PyBuilder
-target/
+mons.bundle.js:3:76823
+mons.bundle.js:3:76823
+mons.bundle.js:3:76823
+mons.bundle.js:3:76823
+mons.bundle.js:3:76823
+mons.bundle.js:3:76823
 
 # Jupyter Notebook
 .ipynb_checkpoints
@@ -102,6 +102,6 @@ venv.bak/
 # mypy
 .mypy_cache/
 
+# safe-networking-tools specific
+.vscode
 
-
-sfn-tools/
