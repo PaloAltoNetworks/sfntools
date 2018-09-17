@@ -103,5 +103,5 @@ venv.bak/
 .mypy_cache/
 
 # safe-networking-tools specific
-.vscode
+.vscode/
 
