@@ -16,15 +16,19 @@ def cli():
 @click.option('--config', help='Settings file <~./panrc>', default='~/.panrc')
 @click.option('--host', help='Host to send generated log messages to <localhost>', default='localhost')
 @click.option('--port', help='Host port to connect <5514>', default=5514)
-@click.option('--days_past', help='Number of days in past to generate events <90>', default=90)
-@click.option('--days_future', help='Number of days in the future to generate events <30>', default=30)
+@click.option('--days_past', help='Number of days in past to generate events <0>', default=0)
+@click.option('--days_future', help='Number of days in the future to generate events <0>', default=0)
+@click.option('--date_start', help='Start date <"2018/01/01 00:00:00"> remember quotes', default="2018/01/01 00:00:00")
+@click.option('--date_end', help='End date <"2018/12/31 23:59:59"> remember quotes', default="2018/12/31 23:59:59")
 @click.option('--tne',  help='Total number of events to generate <1 million>', default=1000000)
 @click.option('--pack', help='Content pack name <AppThreat-scriptGen>', default='AppThreat-scriptGen')
-def dns(config,host,port,tne,days_past,days_future,pack):
-    '''
-    Generate fake DNS threat traffic.\n
+@click.option('--edl', is_flag=True, help='Send EDL THREAT logs rather than content THREAT logs')
+def dns(config,host,port,tne,days_past,days_future,pack,date_start, date_end,edl):
+    """Generate fake DNS threat traffic.\n
     Option defaults are in brackets <...>
-    '''
+    """
+
+    
     if config:
         click.echo(f"Config file is {config}")
     
@@ -41,23 +45,35 @@ def dns(config,host,port,tne,days_past,days_future,pack):
         numEvents = random.randint(1,25)
         sleepTime = random.randint(1,3)
         for event in range(numEvents):
-            startDate = calcDate("past",days_past)
-            endDate = calcDate("future",days_future)
-            # Generate a random date that is in the date range we want
-            genDate = randomDate(startDate,endDate,random.random())
+            
+            # If user specifies days_past and days_future
+            if days_past != 0 and days_future != 0:
+                startDate = calcDate("past",days_past)
+                endDate = calcDate("future",days_future)
+                # Generate a random date that is in the date range we want
+                genDate = randomDate(startDate,endDate,random.random())
+            # Otherwise we will generate based on start and end dates
+            else:
+                genDate = randomDate(date_start,date_end,random.random())
+            
             # Get the month so we know which customer file to use
             tempDate = datetime.strptime(genDate, "%Y/%m/%d %H:%M:%S")
             csvFile = f"data/customerWireless{tempDate.month:02d}.csv"
+            print(f"csvFile is {csvFile}")
             srcLine = randomLine(open(csvFile)).rstrip("\n").split(",")
             srcIP = srcLine[-1]
             IMSI = srcLine[-2]
             IMEI = srcLine[-3]
             dstIP = randomLine(open("data/dnsServers.txt"))
             dstIP = dstIP.strip()
-            threatID = randomLine(open("data/sigsList.txt"))
-            threatID = threatID.strip()
+            badDomain = randomLine(open("data/322K_dnssig_released.txt"))
+            badDomain = badDomain.strip()
+            print(f"{badDomain}")
             severity = "medium"
-            msg = f'1,{genDate},015351000011583,THREAT,dns,2049,{genDate},{srcIP},{dstIP},192.168.55.20,{dstIP},SFN-Logging,,,dns,vsys1,trust,untrust,ethernet1/2,ethernet1/1,SFN-Log-Fowarding,{genDate},18680,1,54848,53,7771,53,0x402000,udp,sinkhole,"",{threatID},any,medium,client-to-server,50115,0x2000000000000000,192.168.0.0-192.168.255.255,United States,0,,0,,,0,,,,,,,,0,12,0,0,0,,FW-{sleepTime},,,,,{IMSI},{IMEI},0,,N/A,dns,{pack},0x0,0,4294967295'
+            if edl:
+                msg = f'1,{genDate},7051000040110,THREAT,spyware,2049,{genDate},{srcIP},{dstIP},192.168.211.101,{dstIP},SFN-EDL-Logging,,,dns,vsys1,Trusted_L3,Untrusted_L3,ethernet1/2,ethernet1/1,SFN-Log-Forwarding,{genDate},189425,1,61239,53,59734,53,0x80402000,udp,sinkhole,Suspicious DNS Query ({badDomain}),Suspicious Domain(12000000),any,medium,client-to-server,227962,0x2000000000000000,192.168.0.0-192.168.255.255,United States,0,,1.20422530882418E+018,,,0,,,,,,,,0,0,0,0,0,,VM-100,,,,,{IMSI},{IMEI},0,,N/A,unknown,AppThreat-0-0,0x0,0,4294967295'
+            else:
+                msg = f'1,{genDate},015351000011583,THREAT,dns,2049,{genDate},{srcIP},{dstIP},192.168.55.20,{dstIP},SFN-Logging,,,dns,vsys1,trust,untrust,ethernet1/2,ethernet1/1,SFN-Log-Fowarding,{genDate},18680,1,54848,53,7771,53,0x402000,udp,sinkhole,"",Suspicious DNS Query (scriptgen:{badDomain})(9999999),any,medium,client-to-server,50115,0x2000000000000000,192.168.0.0-192.168.255.255,United States,0,,0,,,0,,,,,,,,0,12,0,0,0,,FW-{sleepTime},,,,,{IMSI},{IMEI},0,,N/A,dns,{pack},0x0,0,4294967295'
             # We now have the log message built - send it.
             sendLog(f"{host}",port,msg)
             
@@ -89,14 +105,12 @@ def url():
 @click.option('--config', help='Settings file - <~./panrc>', default='~/.panrc')
 @click.option('--host', help='Host to send generated log messages to - <localhost>', default='localhost')
 @click.option('--port', help='Host port to connect - <5514>', default=5514)
-@click.option('--log', help='Log to replay into SFN - <lib/logtraffic.csv>', default='lib/logtraffic.csv')
+@click.option('--log', help='Log to replay into SFN - <lib/logtraffic.csv>', default='data/dns_log.csv')
 @click.option('--sec', help='Number of seconds to sleep between sending loglines - <1>',default=1)
 def replay(config,log,host,port,sec):
-    '''
-    
-    Replay log from NGFW to log receiver.\n 
+    """Replay log from NGFW to log receiver.\n 
     Option defaults are in brackets <...>
-    '''
+    """
     if config:
         click.echo(f"Config file is {config}")
 
