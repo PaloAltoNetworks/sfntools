@@ -59,7 +59,6 @@ def dns(config,host,port,tne,days_past,days_future,pack,date_start, date_end,edl
             # Get the month so we know which customer file to use
             tempDate = datetime.strptime(genDate, "%Y/%m/%d %H:%M:%S")
             csvFile = f"data/customerWireless{tempDate.month:02d}.csv"
-            print(f"csvFile is {csvFile}")
             srcLine = randomLine(open(csvFile)).rstrip("\n").split(",")
             srcIP = srcLine[-1]
             IMSI = srcLine[-2]
@@ -87,11 +86,34 @@ def dns(config,host,port,tne,days_past,days_future,pack,date_start, date_end,edl
 
 
 @click.command()
-def iot():
+@click.option('--config', help='Settings file <~./panrc>', default='~/.panrc')
+@click.option('--host', help='Host to send generated log messages to <localhost>', default='localhost')
+@click.option('--port', help='Host port to connect <5510>', default=5510)
+@click.option('--days_past', help='Number of days in past to generate events <0>', default=0)
+@click.option('--days_future', help='Number of days in the future to generate events <0>', default=0)
+@click.option('--date_start', help='Start date <"2018/01/01 00:00:00"> remember quotes', default="2018-01-01T00:00:00")
+@click.option('--date_end', help='End date <"2018/12/31 23:59:59"> remember quotes', default="2018-12-31T23:59:59")
+@click.option('--tne',  help='Total number of events to generate <1 million>', default=1000000)
+@click.option('--edl', is_flag=True, help='Send EDL THREAT logs rather than content THREAT logs')
+def iot(config,host,port,tne,days_past,days_future,date_start, date_end,edl):
     '''
     NOT USED
     '''
     click.echo("In IoT")
+
+     # If user specifies days_past and days_future
+    if days_past != 0 and days_future != 0:
+        startDate = calcDate("past",days_past)
+        endDate = calcDate("future",days_future)
+        # Generate a random date that is in the date range we want
+        genDate = randomDate(startDate,endDate,random.random(),'%Y-%m-%dT%H:%M:%S')
+    # Otherwise we will generate based on start and end dates
+    else:
+        genDate = randomDate(date_start,date_end,random.random(),'%Y-%m-%dT%H:%M:%S')
+
+    #print(f"{genDate}")
+    msg = f"<158>1 {genDate}.000-07:00 DC-1-Border-vMX - - - - fpc0 PFE_FW_SYSLOG_ETH_IP: FW: ge-0/0/1.0   A 0800 00:0c:29:82:eb:ff -> 00:00:5e:00:01:01 icmp 192.168.1.101 10.1.254.100     8     0 (1 packets)"
+    sendLog(f"{host}",port,msg)
 
 
 @click.command()

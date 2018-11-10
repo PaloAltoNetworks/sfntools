@@ -19,13 +19,19 @@ def randomLine(afile):
     return line
 
 
-def calcDate(direction,ndays):
-    if direction == "past":
-        return f"{datetime.now() - timedelta(days=ndays):%Y/%m/%d %H:%M:%S}"
+def calcDate(direction,ndays,dateFormat="n"):
+    if dateFormat == "T":
+        if direction == "past":
+            return f"{datetime.now() - timedelta(days=ndays):%Y-%m-%dT%H:%M:%S}"
+        else:
+            return f"{datetime.now() + timedelta(days=ndays):%Y/%m/%d %H:%M:%S}"
     else:
-        return f"{datetime.now() + timedelta(days=ndays):%Y/%m/%d %H:%M:%S}"
+        if direction == "past":
+            return f"{datetime.now() - timedelta(days=ndays):%Y/%m/%d %H:%M:%S}"
+        else:
+            return f"{datetime.now() + timedelta(days=ndays):%Y/%m/%d %H:%M:%S}"
 
-def strTimeProp(start, end, format, prop):
+def strTimeProp(start, end, dateFormat, prop):
     """Get a time at a proportion of a range of two formatted times.
 
     start and end should be strings specifying times formated in the
@@ -34,16 +40,16 @@ def strTimeProp(start, end, format, prop):
     start.  The returned time will be in the specified format.
     """
 
-    stime = time.mktime(time.strptime(start, format))
-    etime = time.mktime(time.strptime(end, format))
+    stime = time.mktime(time.strptime(start, dateFormat))
+    etime = time.mktime(time.strptime(end, dateFormat))
 
     ptime = stime + prop * (etime - stime)
     #print(time.strftime(format, time.localtime(ptime)))
-    return time.strftime(format, time.localtime(ptime))
+    return time.strftime(dateFormat, time.localtime(ptime))
 
 
-def randomDate(start, end, prop):
-    return strTimeProp(start, end, '%Y/%m/%d %H:%M:%S', prop).strip()
+def randomDate(start, end, prop,dateFormat='%Y/%m/%d %H:%M:%S'):
+    return strTimeProp(start, end, dateFormat, prop).strip()
 
 
 def main():
