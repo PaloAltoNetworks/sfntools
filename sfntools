@@ -6,7 +6,7 @@ import random
 from datetime import datetime, timedelta
 
 from lib.utils import *
-from DNS.dns import *
+#from DNS.dns import *
 
 @click.group()
 def cli():
@@ -56,25 +56,35 @@ def dns(config,host,port,tne,days_past,days_future,pack,date_start, date_end,edl
             else:
                 genDate = randomDate(date_start,date_end,random.random())
             
-            # Get the month so we know which customer file to use
+            # Generate the srcIP based on the month number.  This will allow for
+            # the events to be corr3lated to a customer (in customer-db) via 
+            # logstash. 
+            # In the case of DNS, we need the source IP, the IMSI and the IMEI
+            # for the customer as well. So parse those out
+            # First get the right customer file to use
             tempDate = datetime.strptime(genDate, "%Y/%m/%d %H:%M:%S")
             csvFile = f"data/customerWireless{tempDate.month:02d}.csv"
             srcLine = randomLine(open(csvFile)).rstrip("\n").split(",")
             srcIP = srcLine[-1]
             IMSI = srcLine[-2]
             IMEI = srcLine[-3]
-            dstIP = randomLine(open("data/dnsServers.txt"))
+
+            # For DNS, the destination is the DNS server
+            dstIP = randomLine(open("data/DNS/dnsServers.txt"))
             dstIP = dstIP.strip()
-            badDomain = randomLine(open("data/322K_dnssig_released.txt"))
+            
+            # Randomly get a malicious domain to be associated with the event
+            badDomain = randomLine(open("data/DNS/shortSigsList.txt"))
             badDomain = badDomain.strip()
             print(f"{badDomain}")
             severity = "medium"
             if edl:
                 msg = f'1,{genDate},7051000040110,THREAT,spyware,2049,{genDate},{srcIP},{dstIP},192.168.211.101,{dstIP},SFN-EDL-Logging,,,dns,vsys1,Trusted_L3,Untrusted_L3,ethernet1/2,ethernet1/1,SFN-Log-Forwarding,{genDate},189425,1,61239,53,59734,53,0x80402000,udp,sinkhole,Suspicious DNS Query ({badDomain}),Suspicious Domain(12000000),any,medium,client-to-server,227962,0x2000000000000000,192.168.0.0-192.168.255.255,United States,0,,1.20422530882418E+018,,,0,,,,,,,,0,0,0,0,0,,VM-100,,,,,{IMSI},{IMEI},0,,N/A,unknown,AppThreat-0-0,0x0,0,4294967295'
             else:
-                msg = f'1,{genDate},015351000011583,THREAT,dns,2049,{genDate},{srcIP},{dstIP},192.168.55.20,{dstIP},SFN-Logging,,,dns,vsys1,trust,untrust,ethernet1/2,ethernet1/1,SFN-Log-Fowarding,{genDate},18680,1,54848,53,7771,53,0x402000,udp,sinkhole,"",Suspicious DNS Query (scriptgen:{badDomain})(9999999),any,medium,client-to-server,50115,0x2000000000000000,192.168.0.0-192.168.255.255,United States,0,,0,,,0,,,,,,,,0,12,0,0,0,,FW-{sleepTime},,,,,{IMSI},{IMEI},0,,N/A,dns,{pack},0x0,0,4294967295'
+                msg = f'1,{genDate},015351000011583,THREAT,dns,2049,{genDate},{srcIP},{dstIP},192.168.55.20,{dstIP},SFN-Logging,,,dns,vsys1,trust,untrust,ethernet1/2,ethernet1/1,SFN-Log-Fowarding,{genDate},18680,1,54848,53,7771,53,0x402000,udp,sinkhole,"",{badDomain},any,medium,client-to-server,50115,0x2000000000000000,192.168.0.0-192.168.255.255,United States,0,,0,,,0,,,,,,,,0,12,0,0,0,,FW-{sleepTime},,,,,{IMSI},{IMEI},0,,N/A,dns,{pack},0x0,0,4294967295'
+                print(f'{msg}')
             # We now have the log message built - send it.
-            sendLog(f"{host}",port,msg)
+            #sendLog(f"{host}",port,msg)
             
 
         count += numEvents
@@ -97,7 +107,9 @@ def dns(config,host,port,tne,days_past,days_future,pack,date_start, date_end,edl
 @click.option('--edl', is_flag=True, help='Send EDL THREAT logs rather than content THREAT logs')
 def iot(config,host,port,tne,days_past,days_future,date_start, date_end,edl):
     '''
-    NOT USED
+    Generate "fake" IoT traffic.  This will pull known bad IoT IPs (or domains)
+    and use those as the destinations.  This emulates what an edge router (Junos)
+    would send to logstash for SFN to parse and classify. 
     '''
     click.echo("In IoT")
 
@@ -111,8 +123,18 @@ def iot(config,host,port,tne,days_past,days_future,date_start, date_end,edl):
     else:
         genDate = randomDate(date_start,date_end,random.random(),'%Y-%m-%dT%H:%M:%S')
 
+    # Generate the srcIP based on the month number.  This will allow for the events to 
+    # be corrlated to a customer (in customer-db) via logstash. 
+    # In the case of IoT, we only need the source IP, we don't need other items. 
+    tempDate = datetime.strptime(genDate, "%Y-%m-%dT%H:%M:%S")
+    csvFile = f"data/customerWireless{tempDate.month:02d}.csv"
+    srcLine = randomLine(open(csvFile)).rstrip("\n").split(",")
+    srcIP = srcLine[-1]
+    dstIP = randomLine(open("data/IOT/iot-bad-ipaddr.txt"))
+    dstIP = dstIP.strip()
+
     #print(f"{genDate}")
-    msg = f"<158>1 {genDate}.000-07:00 DC-1-Border-vMX - - - - fpc0 PFE_FW_SYSLOG_ETH_IP: FW: ge-0/0/1.0   A 0800 00:0c:29:82:eb:ff -> 00:00:5e:00:01:01 icmp 192.168.1.101 10.1.254.100     8     0 (1 packets)"
+    msg = f"<158>1 {genDate}.000-07:00 DC-1-Border-vMX - - - - fpc0 PFE_FW_SYSLOG_ETH_IP: FW: ge-0/0/1.0   A 0800 00:0c:29:82:eb:ff -> 00:00:5e:00:01:01 icmp {srcIP} {dstIP}     8     0 (1 packets)"
     sendLog(f"{host}",port,msg)
 
 
@@ -127,7 +149,7 @@ def url():
 @click.option('--config', help='Settings file - <~./panrc>', default='~/.panrc')
 @click.option('--host', help='Host to send generated log messages to - <localhost>', default='localhost')
 @click.option('--port', help='Host port to connect - <5514>', default=5514)
-@click.option('--log', help='Log to replay into SFN - <lib/logtraffic.csv>', default='data/dns_log.csv')
+@click.option('--log', help='Log to replay into SFN - <data/dns_log.csv>', default='data/dns_log.csv')
 @click.option('--sec', help='Number of seconds to sleep between sending loglines - <1>',default=1)
 def replay(config,log,host,port,sec):
     """Replay log from NGFW to log receiver.\n 
