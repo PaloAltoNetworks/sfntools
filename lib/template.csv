@@ -1,5 +1,0 @@
-
-
-
-    genDate             serialNum                                   genDate            srcIP        dstIP     natSrcIP   natdstIP  ruleName                                                                         genDate       sessionID  srcPort dstPort                                     threatID                         severity      direction                                                                                                                 IMSI                                                                                                                                                                       
-1,2018/05/06 08:01:25,015351000011583,THREAT,vulnerability,2049,2018/05/06 08:01:25,192.168.17.82,8.8.8.8,192.168.55.20,8.8.8.8,SFN-Logging,,,dns,vsys1,trust,untrust,ethernet1/2,ethernet1/1,SFN-Log-Fowarding,2018/05/06 08:01:25,46673,2,   49089,  53,    30191,53,0x402000,udp,alert,"",DGA NXDOMAIN response(36518),any,informational,server-to-client,41651,0x2000000000000000,192.168.0.0-192.168.255.255,United States,0,,0,,,0,,,,,,,,0,12,0,0,0,,ELA-VM-50,,,,,0,,0,,N/A,info-leak,AppThreat-8014-4686,0x0
