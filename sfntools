@@ -23,7 +23,8 @@ def cli():
 @click.option('--tne',  help='Total number of events to generate <1 million>', default=1000000)
 @click.option('--pack', help='Content pack name <AppThreat-scriptGen>', default='AppThreat-scriptGen')
 @click.option('--edl', is_flag=True, help='Send EDL THREAT logs rather than content THREAT logs')
-def dns(config,host,port,tne,days_past,days_future,pack,date_start, date_end,edl):
+@click.option('--cloud', is_flag=True, help='Send DNS-CLOUD THREAT logs rather than content THREAT logs')
+def dns(config,host,port,tne,days_past,days_future,pack,date_start, date_end,edl,cloud):
     """Generate fake DNS threat traffic.\n
     Option defaults are in brackets <...>
     """
@@ -80,6 +81,8 @@ def dns(config,host,port,tne,days_past,days_future,pack,date_start, date_end,edl
             severity = "medium"
             if edl:
                 msg = f'1,{genDate},7051000040110,THREAT,spyware,2049,{genDate},{srcIP},{dstIP},192.168.211.101,{dstIP},SFN-EDL-Logging,,,dns,vsys1,Trusted_L3,Untrusted_L3,ethernet1/2,ethernet1/1,SFN-Log-Forwarding,{genDate},189425,1,61239,53,59734,53,0x80402000,udp,sinkhole,Suspicious DNS Query ({badDomain}),Suspicious Domain(12000000),any,medium,client-to-server,227962,0x2000000000000000,192.168.0.0-192.168.255.255,United States,0,,1.20422530882418E+018,,,0,,,,,,,,0,0,0,0,0,,VM-100,,,,,{IMSI},{IMEI},0,,N/A,unknown,AppThreat-0-0,0x0,0,4294967295'
+            elif cloud:
+                msg = f'1,{genDate},13201000717,THREAT,spyware,2304,{genDate},{srcIP},{dstIP},192.168.5.4,{dstIP},SFN-Logging,,,dns,vsys1,TAP_DNS,TAP_DNS,ethernet1/5,ethernet1/5,SFN-Log-Forwarding,{genDate},2310095,1,53289,53,0,0,0x3000,udp,sinkhole,Suspicious DNS Query ({badDomain}),99999999(99999999),any,medium,client-to-server,6.62809E+18,0x2000000000000000,192.168.0.0-192.168.255.255,United States,0,,0,,,0,,,,,,,,0,0,0,0,0,,FW-{sleepTime},,,,,{IMSI},{IMEI},0,,N/A,dns-cloud,AppThreat-0-0,0x0,0,4294967295,,,25ee5b89-ad1d-47c7-b5a4-b7461d07494e,0'
             else:
                 msg = f'1,{genDate},015351000011583,THREAT,dns,2049,{genDate},{srcIP},{dstIP},192.168.55.20,{dstIP},SFN-Logging,,,dns,vsys1,trust,untrust,ethernet1/2,ethernet1/1,SFN-Log-Fowarding,{genDate},18680,1,54848,53,7771,53,0x402000,udp,sinkhole,"",Suspicious DNS Query (scriptGen:{badDomain})(99999999),any,medium,client-to-server,50115,0x2000000000000000,192.168.0.0-192.168.255.255,United States,0,,0,,,0,,,,,,,,0,12,0,0,0,,FW-{sleepTime},,,,,{IMSI},{IMEI},0,,N/A,dns,{pack},0x0,0,4294967295'
                 print(f'{msg}')
