@@ -2,11 +2,13 @@
 
 ## Install & run the app to get help on usage
 ### 1. Clone repo
-```git clone https://www.github.com/PaloAltoNetworks/safe-networking-tools.git```
+```git clone https://www.github.com/PaloAltoNetworks/sfntools.git```
 <br/>
 ### 2. Change into repo directory
-```cd safe-networking-tools```
+```cd sfntools```
 <br/>
+
+## The following 3 steps are optional.  If you have installed this on the same server as your SafeNetworking instance, you can use the SafeNetworking virtualenv as it has libaries needed.  If this is the case, skip to step 6. 
 ### 3. Create python 3.6 virtualenv
 #### NOTE: If you need to install python 3.6, see [these instructions](https://github.com/PaloAltoNetworks/safe-networking/wiki/Infrastructure-Setup---LOCAL#python-36)
 ```python3.6 -m venv env```
