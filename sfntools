@@ -165,7 +165,7 @@ def replay(config,log,host,port,sec):
         with open(log) as f:
             for line in f:
                 sendLog(host,port,line.rstrip())
-                time.sleep(sec)
+                #time.sleep(sec)
     except EnvironmentError as e:
         print(f'Received error when trying to open logfile {log}:{nl}{e}{nl}')
 
