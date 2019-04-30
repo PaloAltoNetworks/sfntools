@@ -1,13 +1,15 @@
 import time
 import random
-from socket import socket
+import socket
 from datetime import datetime, timedelta
 
 def sendLog(host, port, msg):
     message = msg.encode('utf-8')
-    sock = socket()
-    sock.connect((host, port))
-    sock.sendall(message)
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # UDP
+    sock.sendto(bytes(msg, "utf-8"), (host, port))
+    # sock = socket()
+    # sock.connect((host, port))
+    # sock.sendall(message)
     sock.close()
 
 
