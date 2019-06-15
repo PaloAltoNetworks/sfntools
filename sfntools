@@ -133,15 +133,15 @@ def iot(config,host,port,tne,days_past,days_future,date_start, date_end,edl):
         startDate = calcDate("past",days_past)
         endDate = calcDate("future",days_future)
         # Generate a random date that is in the date range we want
-        genDate = randomDate(startDate,endDate,random.random(),'%Y-%m-%dT%H:%M:%S')
+        genDate = randomDate(startDate,endDate,random.random(),'%Y/%m/%d %H:%M:%S')
     # Otherwise we will generate based on start and end dates
     else:
-        genDate = randomDate(date_start,date_end,random.random(),'%Y-%m-%dT%H:%M:%S')
+        genDate = randomDate(date_start,date_end,random.random(),'%Y/%m/%d %H:%M:%S')
 
     # Generate the srcIP based on the month number.  This will allow for the events to 
     # be corrlated to a customer (in customer-db) via logstash. 
     # In the case of IoT, we only need the source IP, we don't need other items. 
-    tempDate = datetime.strptime(genDate, "%Y-%m-%dT%H:%M:%S")
+    tempDate = datetime.strptime(genDate, "%Y/%m/%d %H:%M:%S")
     csvFile = f"data/CUSTOMER/customerWireless{tempDate.month:02d}.csv"
     srcLine = randomLine(open(csvFile)).rstrip("\n").split(",")
     srcIP = srcLine[-1]
