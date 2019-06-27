@@ -116,8 +116,8 @@ def dns(config,host,port,tne,days_past,days_future,pack,date_start, date_end,edl
 @click.option('--port', help='Host port to connect <5510>', default=5510)
 @click.option('--days_past', help='Number of days in past to generate events <0>', default=0)
 @click.option('--days_future', help='Number of days in the future to generate events <0>', default=0)
-@click.option('--date_start', help='Start date <"2019/01/01 00:00:00"> remember quotes', default="2019-01-01T00:00:00")
-@click.option('--date_end', help='End date <"2019/12/31 23:59:59"> remember quotes', default="2019-12-31T23:59:59")
+@click.option('--date_start', help='Start date <"2019-01-01T00:00:00"> remember quotes', default="2019-01-01T00:00:00")
+@click.option('--date_end', help='End date <"2019-12-31T23:59:59"> remember quotes', default="2019-12-31T23:59:59")
 @click.option('--tne',  help='Total number of events to generate <1 million>', default=1000000)
 @click.option('--edl', is_flag=True, help='Send EDL THREAT logs rather than content THREAT logs')
 def iot(config,host,port,tne,days_past,days_future,date_start, date_end,edl):
@@ -128,31 +128,42 @@ def iot(config,host,port,tne,days_past,days_future,date_start, date_end,edl):
     '''
     click.echo("In IoT")
 
-     # If user specifies days_past and days_future
-    if days_past != 0 and days_future != 0:
-        startDate = calcDate("past",days_past)
-        endDate = calcDate("future",days_future)
-        # Generate a random date that is in the date range we want
-        genDate = randomDate(startDate,endDate,random.random(),'%Y/%m/%d %H:%M:%S')
-    # Otherwise we will generate based on start and end dates
-    else:
-        genDate = randomDate(date_start,date_end,random.random(),'%Y/%m/%d %H:%M:%S')
+    count = 0
+    
+    while count < tne:
+        # Generate a random number of events to send and sleep between each send
+        numEvents = random.randint(1,25)
+        sleepTime = random.randint(1,10)
+        for event in range(numEvents):
+            # If user specifies days_past and days_future
+            if days_past != 0 and days_future != 0:
+                startDate = calcDate("past",days_past)
+                endDate = calcDate("future",days_future)
+                # Generate a random date that is in the date range we want
+                genDate = randomDate(startDate,endDate,random.random(),'%Y-%m-%dT%H:%M:%S')
+            # Otherwise we will generate based on start and end dates
+            else:
+                genDate = randomDate(date_start,date_end,random.random(),'%Y-%m-%dT%H:%M:%S')
 
-    # Generate the srcIP based on the month number.  This will allow for the events to 
-    # be corrlated to a customer (in customer-db) via logstash. 
-    # In the case of IoT, we only need the source IP, we don't need other items. 
-    tempDate = datetime.strptime(genDate, "%Y/%m/%d %H:%M:%S")
-    csvFile = f"data/CUSTOMER/customerWireless{tempDate.month:02d}.csv"
-    srcLine = randomLine(open(csvFile)).rstrip("\n").split(",")
-    srcIP = srcLine[-1]
-    dstLine = randomLine(open("data/IOT/iot-bad-ipaddr.txt"))
-    dstIP,malware = dstLine.split(',')
-    dstIP = dstIP.strip()
+            # Generate the srcIP based on the month number.  This will allow for the events to 
+            # be corrlated to a customer (in customer-db) via logstash. 
+            # In the case of IoT, we only need the source IP, we don't need other items. 
+            tempDate = datetime.strptime(genDate, "%Y-%m-%dT%H:%M:%S")
+            csvFile = f"data/CUSTOMER/customerWireless{tempDate.month:02d}.csv"
+            srcLine = randomLine(open(csvFile)).rstrip("\n").split(",")
+            srcIP = srcLine[-1]
+            dstLine = randomLine(open("data/IOT/iot-bad-ipaddr.txt"))
+            dstIP,malware = dstLine.split(',')
+            dstIP = dstIP.strip()
 
-    #print(f"{genDate}")
-    msg = f"<158>1 {genDate}.000-07:00 DC-1-Border-vMX - - - - fpc0 PFE_FW_SYSLOG_ETH_IP: FW: ge-0/0/1.0   A 0800 00:0c:29:82:eb:ff -> 00:00:5e:00:01:01 icmp {srcIP} {dstIP}     8     0 (1 packets)"
-    print(f"{msg}")
-    sendLog(f"{host}",port,msg)
+            # Create the message and send it
+            msg = f"<158>1 {genDate}.000-07:00 DC-1-Border-vMX - - - - fpc0 PFE_FW_SYSLOG_ETH_IP: FW: ge-0/0/1.0   A 0800 00:0c:29:82:eb:ff -> 00:00:5e:00:01:01 icmp {srcIP} {dstIP}     8     0 (1 packets)"
+            print(f"{msg}")
+            sendLog(f"{host}",port,msg)
+
+        # Increment the number of events sent and sleep for a few            
+        count += numEvents
+        time.sleep(sleepTime)
 
 
 @click.command()
